@@ -32,6 +32,7 @@ import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.CharsRefBuilder;
 import org.apache.solr.common.params.MapSolrParams;
+import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.parser.QueryParser;
 import org.apache.solr.schema.FieldType;
@@ -90,8 +91,23 @@ public class QueryParsing {
     return parseLocalParams(txt, start, target, params, LOCALPARAM_START, LOCALPARAM_END);
   }
 
-
   public static int parseLocalParams(String txt, int start, Map<String, String> target, SolrParams params, String startString, char endChar) throws SyntaxError {
+    ModifiableSolrParams newTarget = new ModifiableSolrParams();
+    int retVal = parseLocalParams(txt, start, newTarget, params, startString, endChar);
+    // Translate ModifiableSolrParams to Map<String, String>, implementing "last value wins" for multi-valued params for backward compatibility
+    for (String param : newTarget.getParameterNames()) {
+      for (String value : newTarget.getParams(param)) {
+        target.put(param, value);
+      }
+    }
+    return retVal;
+  }
+
+  public static int parseLocalParams(String txt, int start, ModifiableSolrParams target, SolrParams params) throws SyntaxError {
+    return parseLocalParams(txt, start, target, params, LOCALPARAM_START, LOCALPARAM_END);
+  }
+
+  public static int parseLocalParams(String txt, int start, ModifiableSolrParams target, SolrParams params, String startString, char endChar) throws SyntaxError {
     int off = start;
     if (!txt.startsWith(startString, off)) return start;
     StrParser p = new StrParser(txt, start, txt.length());
@@ -156,7 +172,7 @@ public class QueryParsing {
           }
         }
       }
-      if (target != null) target.put(id, val);
+      if (target != null) target.add(id, val);
     }
   }
 
