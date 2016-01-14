@@ -86,11 +86,28 @@ public class QueryParsing {
     return df != null ? df : s.getDefaultSearchFieldName();
   }
 
-  // note to self: something needs to detect infinite recursion when parsing queries
+  /**
+   * @param txt Text to parse
+   * @param start Index into text for start of parsing
+   * @param target Object to inject with parsed settings
+   * @param params Additional existing parameters
+   * @deprecated use {@link #parseLocalParams(String, int, ModifiableSolrParams, SolrParams)} instead
+   */
+  @Deprecated
   public static int parseLocalParams(String txt, int start, Map<String, String> target, SolrParams params) throws SyntaxError {
     return parseLocalParams(txt, start, target, params, LOCALPARAM_START, LOCALPARAM_END);
   }
 
+  /**
+   * @param txt Text to parse
+   * @param start Index into text for start of parsing
+   * @param target Object to inject with parsed settings
+   * @param params Additional existing parameters
+   * @param startString String that indicates the start of a localParams section
+   * @param endChar Character that indicates the end of a localParams section
+   * @deprecated use {@link #parseLocalParams(String, int, ModifiableSolrParams, SolrParams, String, char)} instead
+   */
+  @Deprecated
   public static int parseLocalParams(String txt, int start, Map<String, String> target, SolrParams params, String startString, char endChar) throws SyntaxError {
     ModifiableSolrParams newTarget = new ModifiableSolrParams();
     int retVal = parseLocalParams(txt, start, newTarget, params, startString, endChar);
@@ -103,11 +120,26 @@ public class QueryParsing {
     return retVal;
   }
 
+  /**
+   * @param txt Text to parse
+   * @param start Index into text for start of parsing
+   * @param target Object to inject with parsed settings
+   * @param params Additional existing parameters
+   */
   public static int parseLocalParams(String txt, int start, ModifiableSolrParams target, SolrParams params) throws SyntaxError {
     return parseLocalParams(txt, start, target, params, LOCALPARAM_START, LOCALPARAM_END);
   }
 
+  /**
+   * @param txt Text to parse
+   * @param start Index into text for start of parsing
+   * @param target Object to inject with parsed settings
+   * @param params Additional existing parameters
+   * @param startString String that indicates the start of a localParams section
+   * @param endChar Character that indicates the end of a localParams section
+   */
   public static int parseLocalParams(String txt, int start, ModifiableSolrParams target, SolrParams params, String startString, char endChar) throws SyntaxError {
+    // note to self: something needs to detect infinite recursion when parsing queries
     int off = start;
     if (!txt.startsWith(startString, off)) return start;
     StrParser p = new StrParser(txt, start, txt.length());
